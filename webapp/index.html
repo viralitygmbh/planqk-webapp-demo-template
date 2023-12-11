@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sample index.html</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .resultDiv {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+    </style>
+    <script>
+        let runId = null; // Global variable to store the run ID
+
+        // Function to create a new run on the PlanQK platform
+        function createRun(data) {
+            fetch('/planqk/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(
+                    {
+                        "data": {},
+                        "param": {}
+                    }
+                )
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Create Run Success:', data);
+                    runId = data.id; // Set the global variable
+                    getStatus(); // Automatically call getStatus
+                })
+                .catch((error) => {
+                    document.getElementById('statusDiv').innerText = error;
+                    document.getElementById('statusDiv').style.display = 'block';
+                    console.error('Error:', error);
+                });
+        }
+
+        // Function to get the status of a run
+        function getStatus() {
+            if (runId) {
+                fetch(`/planqk/status/${runId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Status:', data);
+                        document.getElementById('statusDiv').innerText = 'Status: ' + JSON.stringify(data);
+                        document.getElementById('statusDiv').style.display = 'block';
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            } else {
+                document.getElementById('statusDiv').innerText = 'No run ID available';
+                document.getElementById('statusDiv').style.display = 'block';
+            }
+        }
+
+        // Function to get the result of a run
+        function getResult() {
+            if (runId) {
+                fetch(`/planqk/result/${runId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Result:', data);
+                        document.getElementById('resultDiv').innerText = 'Result: ' + JSON.stringify(data);
+                        document.getElementById('resultDiv').style.display = 'block';
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
+        }
+    </script>
+</head>
+<body>
+<button onclick="createRun('yourDataHere')">Create Run</button>
+<button onclick="getStatus()">Get Status</button>
+<button onclick="getResult()">Get Result</button>
+
+<div id="statusDiv" class="resultDiv">Status will be displayed here</div>
+<div id="resultDiv" class="resultDiv">Result will be displayed here</div>
+</body>
+</html>
