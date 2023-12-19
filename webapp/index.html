@@ -32,6 +32,11 @@
             background-color: #45a049;
         }
 
+        .disabledButton {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
         .resultDiv {
             display: none;
             margin-top: 20px;
@@ -39,11 +44,19 @@
             border: 1px solid #ddd;
             background-color: #f9f9f9;
         }
+
+        #pollingIndicator {
+            display: none;
+            margin-top: 10px;
+        }
     </style>
     <script>
         let runId = null;
+        let pollingInterval = null;
 
         function createRun() {
+            document.getElementById('runButton').disabled = true; // Disable the button
+            document.getElementById('runButton').classList.add('disabledButton'); // Change the style to indicate it's disabled
             let inputData = document.getElementById('inputJson').value;
             try {
                 let jsonData = JSON.parse(inputData);
@@ -54,44 +67,63 @@
                     },
                     body: JSON.stringify(jsonData)
                 })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Create Run Success:', data);
-                    runId = data.id; // Set the global variable
-                    getStatus(); // Automatically call getStatus
-                })
-                .catch((error) => {
-                    document.getElementById('statusDiv').innerText = error;
-                    document.getElementById('statusDiv').style.display = 'block';
-                    console.error('Error:', error);
-                });
-                // rest of your createRun function
-            } catch (e) {
-                document.getElementById('statusDiv').innerText = 'Invalid JSON format';
-                document.getElementById('statusDiv').style.display = 'block';
-            }
-        }
-
-        // Function to get the status of a run
-        function getStatus() {
-            if (runId) {
-                fetch(`/planqk/status/${runId}`)
                     .then(response => response.json())
                     .then(data => {
-                        console.log('Status:', data);
-                        document.getElementById('statusDiv').innerText = 'Status: ' + JSON.stringify(data);
-                        document.getElementById('statusDiv').style.display = 'block';
+                        console.log('Create Run Success:', data);
+                        runId = data.id;
+                        getStatus();
                     })
                     .catch((error) => {
                         console.error('Error:', error);
+                        resetRunButton();
                     });
-            } else {
-                document.getElementById('statusDiv').innerText = 'No run ID available';
-                document.getElementById('statusDiv').style.display = 'block';
+            } catch (e) {
+                console.error('Error:', e);
+                resetRunButton();
             }
         }
 
-        // Function to get the result of a run
+        function resetRunButton() {
+            document.getElementById('runButton').disabled = false;
+            document.getElementById('runButton').classList.remove('disabledButton');
+        }
+
+        function getStatus() {
+            if (runId) {
+                document.getElementById('pollingIndicator').innerText = 'Polling for status...';
+                document.getElementById('pollingIndicator').style.display = 'block';
+
+                const checkStatus = () => {
+                    fetch(`/planqk/status/${runId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Status:', data);
+                            document.getElementById('statusDiv').innerText = 'Status: ' + JSON.stringify(data);
+                            document.getElementById('statusDiv').style.display = 'block';
+
+                            if (data.status === 'SUCCEEDED' || data.status === 'FAILED') {
+                                clearInterval(pollingInterval);
+                                document.getElementById('pollingIndicator').style.display = 'none';
+                                getResult();
+                                resetRunButton();
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                            clearInterval(pollingInterval);
+                            document.getElementById('pollingIndicator').style.display = 'none';
+                            resetRunButton();
+                        });
+                };
+
+                pollingInterval = setInterval(checkStatus, 3000);
+            } else {
+                document.getElementById('statusDiv').innerText = 'No run ID available';
+                document.getElementById('statusDiv').style.display = 'block';
+                resetRunButton();
+            }
+        }
+
         function getResult() {
             if (runId) {
                 fetch(`/planqk/result/${runId}`)
@@ -109,17 +141,16 @@
     </script>
 </head>
 <body>
-<textarea id="inputJson" class="inputField" rows="4">
-{
-    "data": {},
-    "param": {}
-}
-</textarea>
-<button onclick="createRun()">Create Run</button>
-<button onclick="getStatus()">Get Status</button>
-<button onclick="getResult()">Get Result</button>
+<textarea id="inputJson" class="inputField" rows="10">
+    {
+        "data": {},
+        "params": {}
+    }
+    </textarea>
+<button id="runButton" onclick="createRun()">Create Run</button>
 
 <div id="statusDiv" class="resultDiv">Status will be displayed here</div>
 <div id="resultDiv" class="resultDiv">Result will be displayed here</div>
+<div id="pollingIndicator">Polling for status...</div>
 </body>
 </html>
