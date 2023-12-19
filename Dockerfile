@@ -1,17 +1,26 @@
-# Stage 1: Build planqk-proxy
-FROM node:14-alpine AS builder
-WORKDIR /app
-COPY ./planqk-proxy/package.json ./planqk-proxy/
-RUN cd ./planqk-proxy && npm install
-COPY ./planqk-proxy/ ./planqk-proxy/
-
-# Stage 2: Setup Nginx, Node and Supervisord
+# Use an official Node runtime as a parent image
 FROM node:14-alpine
-WORKDIR /app
-RUN apk add --no-cache nginx supervisor
-COPY --from=builder /app/planqk-proxy/ /app/planqk-proxy/
-COPY ./webapp /usr/share/nginx/html/
-COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY ./supervisord.conf /etc/supervisord.conf
+
+# Copy the webapp to the Nginx serve directory
+WORKDIR /app/webapp
+COPY ./webapp/ .
+
+# Set working directory for the planqk-proxy
+WORKDIR /app/planqk-proxy
+
+# Copy the package.json file and install dependencies
+COPY ./planqk-proxy/package.json ./
+RUN npm install
+
+# Copy the rest of the planqk-proxy code
+COPY ./planqk-proxy/ .
+
+# Copy the startup script
+COPY ./start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Expose the port Nginx is reachable on
 EXPOSE 8080
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisord.conf"]
+
+# Start Nginx and the planqk-proxy
+CMD ["/start.sh"]
