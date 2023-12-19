@@ -9,6 +9,16 @@
             padding: 20px;
         }
 
+        .inputField {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
         button {
             background-color: #4CAF50;
             color: white;
@@ -31,22 +41,19 @@
         }
     </style>
     <script>
-        let runId = null; // Global variable to store the run ID
+        let runId = null;
 
-        // Function to create a new run on the PlanQK platform
-        function createRun(data) {
-            fetch('/planqk/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(
-                    {
-                        "data": {},
-                        "param": {}
-                    }
-                )
-            })
+        function createRun() {
+            let inputData = document.getElementById('inputJson').value;
+            try {
+                let jsonData = JSON.parse(inputData);
+                fetch('/planqk/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(jsonData)
+                })
                 .then(response => response.json())
                 .then(data => {
                     console.log('Create Run Success:', data);
@@ -58,6 +65,11 @@
                     document.getElementById('statusDiv').style.display = 'block';
                     console.error('Error:', error);
                 });
+                // rest of your createRun function
+            } catch (e) {
+                document.getElementById('statusDiv').innerText = 'Invalid JSON format';
+                document.getElementById('statusDiv').style.display = 'block';
+            }
         }
 
         // Function to get the status of a run
@@ -97,7 +109,13 @@
     </script>
 </head>
 <body>
-<button onclick="createRun('yourDataHere')">Create Run</button>
+<textarea id="inputJson" class="inputField" rows="4">
+{
+    "data": {},
+    "param": {}
+}
+</textarea>
+<button onclick="createRun()">Create Run</button>
 <button onclick="getStatus()">Get Status</button>
 <button onclick="getResult()">Get Result</button>
 
