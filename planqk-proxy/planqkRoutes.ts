@@ -1,11 +1,16 @@
 import { Router, Request, Response } from 'express';
 import { PlanqkServiceClient } from "@anaqor/planqk-service-sdk";
+import {Config} from "./config";
 
 const router = Router();
 
-export default function(planqkServiceClient: PlanqkServiceClient) {
+export default function(planqkServiceClient: PlanqkServiceClient, config: Config) {
     router.get('/', (req: Request, res: Response) => {
         res.send('Hello World!');
+    });
+
+    router.get('/demoData', (req: Request, res: Response) => {
+        res.send(config.demoData);
     });
 
     router.post('/create', async (req: Request, res: Response) => {

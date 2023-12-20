@@ -54,6 +54,16 @@
         let runId = null;
         let pollingInterval = null;
 
+        function getDemoData() {
+            fetch(`/planqk/demoData`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('inputJson').innerText = JSON.stringify(data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
         function createRun() {
             document.getElementById('runButton').disabled = true; // Disable the button
             document.getElementById('runButton').classList.add('disabledButton'); // Change the style to indicate it's disabled
@@ -140,7 +150,7 @@
         }
     </script>
 </head>
-<body>
+<body onload="getDemoData()">
 <textarea id="inputJson" class="inputField" rows="10">
     {
         "data": {},

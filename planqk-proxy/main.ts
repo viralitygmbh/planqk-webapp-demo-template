@@ -27,9 +27,9 @@ class Server {
     }
 
     private configureRoutes(): void {
-        console.log("Config: ", config.serviceEndpoint, config.consumerKey, config.consumerSecret);
+        console.log("Config: ", config.demoData, config.serviceEndpoint, config.consumerKey, config.consumerSecret);
         const planqkServiceClient = new PlanqkServiceClient(config.serviceEndpoint, config.consumerKey, config.consumerSecret);
-        this.app.use('/planqk/', planqkRoutes(planqkServiceClient));
+        this.app.use('/planqk/', planqkRoutes(planqkServiceClient, config));
         this.app.get('*', (req, res) => {
             res.sendFile(path.join(__dirname, '../webapp/index.html'));
         });

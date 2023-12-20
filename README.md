@@ -20,6 +20,7 @@ settings of the use-case demonstrator:
 CONSUMER_KEY=
 CONSUMER_SECRET=
 SERVICE_ENDPOINT=
+DEMO_DATA={"data":{}, "params:{}"}
 PORT=8080
 ```
 

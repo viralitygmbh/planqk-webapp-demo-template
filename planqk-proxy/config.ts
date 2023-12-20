@@ -1,9 +1,10 @@
 // config.ts
-interface Config {
+export interface Config {
     port: number;
     serviceEndpoint: string;
     consumerKey: string;
     consumerSecret: string;
+    demoData: string;
 }
 
 const config: Config = {
@@ -11,6 +12,10 @@ const config: Config = {
     serviceEndpoint: process.env.SERVICE_ENDPOINT || '',
     consumerKey: process.env.CONSUMER_KEY || '',
     consumerSecret: process.env.CONSUMER_SECRET || '',
+    demoData: process.env.DEMO_DATA || '{\n' +
+        '        "data": {},\n' +
+        '        "params": {}\n' +
+        '    }',
 };
 
 export { config };
