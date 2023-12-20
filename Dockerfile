@@ -1,7 +1,7 @@
 # Use an official Node runtime as a parent image
 FROM node:14-alpine
 
-# Copy the webapp to the Nginx serve directory
+# Copy the webapp
 WORKDIR /app/webapp
 COPY ./webapp/ .
 
@@ -19,8 +19,8 @@ COPY ./planqk-proxy/ .
 COPY ./start.sh /start.sh
 RUN chmod +x /start.sh
 
-# Expose the port Nginx is reachable on
+# Expose the port that the node-script is reachable on
 EXPOSE 8080
 
-# Start Nginx and the planqk-proxy
+# Start the planqk-proxy
 CMD ["/start.sh"]
